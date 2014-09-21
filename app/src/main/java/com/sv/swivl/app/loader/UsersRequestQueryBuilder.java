@@ -53,10 +53,11 @@ public class UsersRequestQueryBuilder {
 
             User user;
             for(int i=0; i < json.length(); i++) {
+                String avatarURL = json.getJSONObject(i).getString("avatar_url");
                 String login = json.getJSONObject(i).getString("login");
                 String htmlURL = json.getJSONObject(i).getString("html_url");
 
-                user = new User(login, htmlURL);
+                user = new User(avatarURL, login, htmlURL);
                 users.add(user);
             }
 
