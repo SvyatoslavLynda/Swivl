@@ -1,4 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">Swivl</string>
+
+    <string name="refresh_action">Refreshing</string>
+    <string name="connection_message">Cold not load users from githab. Check you internet connection.</string>
 </resources>
