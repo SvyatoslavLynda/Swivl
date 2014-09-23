@@ -19,6 +19,7 @@ import java.util.ArrayList;
 
 public class MainActivity extends ActionBarActivity implements LoaderManager.LoaderCallbacks<ArrayList<User>>, OnRefreshListener {
 
+    private static final String SAVE_INSTANCE_STATE = "saveInstanceState";
 
     private ListView usersList;
     private UsersAdapter adapter;
@@ -35,7 +36,29 @@ public class MainActivity extends ActionBarActivity implements LoaderManager.Loa
         mPullToRefreshLayout.setRefreshing(true);
         usersList = (ListView) findViewById(R.id.usersList);
         getSupportLoaderManager().initLoader(1, null, this);
+    }
 
+    @Override
+    protected void onStop() {
+        super.onStop();
+
+        if(isFinishing()) {
+            loader = null;
+        }
+    }
+
+    @Override
+    protected void onSaveInstanceState(Bundle state) {
+        super.onSaveInstanceState(state);
+        state.putParcelable(SAVE_INSTANCE_STATE, usersList.onSaveInstanceState());
+    }
+
+    @Override
+    protected void onRestoreInstanceState(Bundle savedInstanceState) {
+        super.onRestoreInstanceState(savedInstanceState);
+
+        if(savedInstanceState != null)
+            usersList.onRestoreInstanceState(savedInstanceState.getParcelable(SAVE_INSTANCE_STATE));
     }
 
     @Override
@@ -46,6 +69,12 @@ public class MainActivity extends ActionBarActivity implements LoaderManager.Loa
 
     @Override
     public void onLoadFinished(Loader<ArrayList<User>> loader, ArrayList<User> data) {
+        mPullToRefreshLayout.setRefreshComplete();
+        if(data == null) return;
+
+        if(data.size() == 0)
+            Toast.makeText(getApplicationContext(), getString(R.string.connection_message), Toast.LENGTH_SHORT).show();
+
         if(adapter == null) {
             adapter = new UsersAdapter(MainActivity.this, data);
         } else {
@@ -53,19 +82,15 @@ public class MainActivity extends ActionBarActivity implements LoaderManager.Loa
                 adapter.add(u);
             }
         }
-            usersList.setAdapter(adapter);
-        mPullToRefreshLayout.setRefreshComplete();
+        usersList.setAdapter(adapter);
     }
 
     @Override
-    public void onLoaderReset(Loader<ArrayList<User>> loader) {
-
-    }
+    public void onLoaderReset(Loader<ArrayList<User>> loader) { }
 
     @Override
     public void onRefreshStarted(View view) {
-
-        Toast.makeText(getApplicationContext(), "Refreshing", Toast.LENGTH_LONG).show();
+        Toast.makeText(getApplicationContext(), getString(R.string.refresh_action), Toast.LENGTH_SHORT).show();
         int usersIndex = adapter.getCount();
         ((UsersLoader) loader).setListItem(((UsersLoader) loader).getListItem()+usersIndex);
         loader.forceLoad();
